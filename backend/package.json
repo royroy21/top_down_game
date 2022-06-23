@@ -1,0 +1,9 @@
+{
+  "name": "top_down_game",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@geckos.io/server": "^2.2.1"
+  }
+}

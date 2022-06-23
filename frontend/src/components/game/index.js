@@ -42,6 +42,6 @@ export default class Game extends React.Component {
   }
 
   render() {
-    return <div style={{height: "100%", overflow: "hidden", cursor: "none"}} id="phaserGame" />
+    return <div id="phaserGame" />
   }
 }
