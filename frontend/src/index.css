@@ -1,0 +1,22 @@
+body {
+  all: unset;
+  background-color: #707070;
+  font-family: Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar {
+  display: block;
+  width: 0;
+}
+
+canvas {
+  display : block;
+  margin : auto;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
