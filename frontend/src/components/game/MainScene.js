@@ -12,6 +12,7 @@ const getRandomNumber = (min, max, fractionDigits = 0) => {
 class MainScene extends Phaser.Scene {
     constructor() {
         super("MainScene");
+        this.key = null;
         this.player = null;
         this.playerLabel = null;
         this.otherPlayers = {};
@@ -45,6 +46,7 @@ class MainScene extends Phaser.Scene {
 
     connectToServer() {
         this.channel = geckos({
+            // host: "198.168.0.88",
             port: 9208
         }) // default port is 9208
 
@@ -77,45 +79,29 @@ class MainScene extends Phaser.Scene {
         });
         if (!this.playerLabel) {
             this.playerLabel = existingPlayers[this.getPlayerID()];
-            this.initialiseGame(parsedData[this.playerLabel].x, parsedData[this.playerLabel].y);
+            this.initialiseGame(
+              parsedData[this.playerLabel].key,
+              parsedData[this.playerLabel].x,
+              parsedData[this.playerLabel].y,
+            );
         }
         this.updateOtherPlayers(parsedData);
     }
 
-    initialiseGame(x, y) {
+    initialiseGame(key, x, y) {
         this.configureMap();
+        this.key = key;
         this.player = new CustomPlayer({
             scene: this,
             x: x,
             y: y,
-            key: "blueKnightSpriteSheet",
+            key: key,
             label: this.playerLabel,
             gameID: this.getGameID(),
             playerID: this.getPlayerID(),
         });
         this.physics.add.collider(this.player, this.blocking);
         this.configureCamera();
-
-        // TODO - animations should live elsewhere.
-        this.anims.create({
-            key: "brown_walk",
-            frameRate: 7,
-            frames: this.anims.generateFrameNumbers(
-                "brownKnightSpriteSheet", {
-                    start: 1,
-                    end: 0,
-                },
-            ),
-            repeat: -1
-        });
-        this.anims.create({
-            key: "brown_idle",
-            frameRate: 7,
-            frames: [{
-                key: "brownKnightSpriteSheet",
-                frame: 0
-            }],
-        });
     }
 
     getPlayerID() {
@@ -195,11 +181,35 @@ class MainScene extends Phaser.Scene {
     }
 
     createOtherPlayer(label, data) {
-        this.otherPlayers[label] = this.physics.add.sprite(data.x, data.y, "brownKnightSpriteSheet");
+        this.otherPlayers[label] = this.physics.add.sprite(
+          data.x,
+          data.y,
+          `${data.key}KnightSpriteSheet`,
+        );
         this.otherPlayers[label].body.immovable = true;
         this.otherPlayers[label].body.moves = false;
         this.physics.add.collider(this.otherPlayers[label], this.blocking);
         this.physics.add.collider(this.otherPlayers[label], this.player);
+
+        this.anims.create({
+            key: `${data.key}_walk`,
+            frameRate: 7,
+            frames: this.anims.generateFrameNumbers(
+                `${data.key}KnightSpriteSheet`, {
+                    start: 1,
+                    end: 0,
+                },
+            ),
+            repeat: -1
+        });
+        this.anims.create({
+            key: `${data.key}_idle`,
+            frameRate: 7,
+            frames: [{
+                key: `${data.key}KnightSpriteSheet`,
+                frame: 0
+            }],
+        });
     }
 
     updateOtherPlayer(label, data) {

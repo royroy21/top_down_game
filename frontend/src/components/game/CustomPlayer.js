@@ -30,10 +30,10 @@ class CustomPlayer extends Phaser.GameObjects.Sprite {
 
     createAnimations() {
         this.scene.anims.create({
-            key: "walk",
+            key: `${this.key}_walk`,
             frameRate: 7,
             frames: this.scene.anims.generateFrameNumbers(
-                this.key, {
+                `${this.key}KnightSpriteSheet`, {
                     start: 1,
                     end: 0,
                 },
@@ -41,10 +41,10 @@ class CustomPlayer extends Phaser.GameObjects.Sprite {
             repeat: -1
         });
         this.scene.anims.create({
-            key: "idle",
+            key: `${this.key}_idle`,
             frameRate: 7,
             frames: [{
-                key: this.key,
+                key: `${this.key}KnightSpriteSheet`,
                 frame: 0
             }],
         });
@@ -61,7 +61,7 @@ class CustomPlayer extends Phaser.GameObjects.Sprite {
     stopPlayer() {
         this.stopPlayerVelocityX();
         this.stopPlayerVelocityY();
-        this.play("idle");
+        this.play(`${this.key}_idle`);
         if (this.updatePlayerPosition) {
             if (!this.playerStillIdle) {
                 this.playerStillIdle = true;
@@ -78,8 +78,8 @@ class CustomPlayer extends Phaser.GameObjects.Sprite {
             this.flipX = false;
         }
         this.body.setVelocityX(-Math.abs(this.playerSpeed));
-        if (!(this.anims.isPlaying && this.anims.currentAnim.key === "walk")) {
-            this.play("walk");
+        if (!(this.anims.isPlaying && this.anims.currentAnim.key === `${this.key}_walk`)) {
+            this.play(`${this.key}_walk`);
         }
         this.updatePlayerPosition = true;
         this.playerStillIdle = false;
@@ -90,8 +90,8 @@ class CustomPlayer extends Phaser.GameObjects.Sprite {
             this.flipX = true;
         }
         this.body.setVelocityX(this.playerSpeed);
-        if (!(this.anims.isPlaying && this.anims.currentAnim.key === "walk")) {
-            this.play("walk");
+        if (!(this.anims.isPlaying && this.anims.currentAnim.key === `${this.key}_walk`)) {
+            this.play(`${this.key}_walk`);
         }
         this.updatePlayerPosition = true;
         this.playerStillIdle = false;
@@ -99,8 +99,8 @@ class CustomPlayer extends Phaser.GameObjects.Sprite {
 
     movePlayerUp() {
         this.body.setVelocityY(-Math.abs(this.playerSpeed));
-        if (!(this.anims.isPlaying && this.anims.currentAnim.key === "walk")) {
-            this.play("walk");
+        if (!(this.anims.isPlaying && this.anims.currentAnim.key === `${this.key}_walk`)) {
+            this.play(`${this.key}_walk`);
         }
         this.updatePlayerPosition = true;
         this.playerStillIdle = false;
@@ -108,8 +108,8 @@ class CustomPlayer extends Phaser.GameObjects.Sprite {
 
     movePlayerDown() {
         this.body.setVelocityY(this.playerSpeed);
-        if (!(this.anims.isPlaying && this.anims.currentAnim.key === "walk")) {
-            this.play("walk");
+        if (!(this.anims.isPlaying && this.anims.currentAnim.key === `${this.key}_walk`)) {
+            this.play(`${this.key}_walk`);
         }
         this.updatePlayerPosition = true;
         this.playerStillIdle = false;
@@ -179,7 +179,8 @@ class CustomPlayer extends Phaser.GameObjects.Sprite {
             label: this.label,
             gameID: this.gameID,
             playerID: this.playerID,
-            animation: "brown_" + this.anims.currentAnim.key, // TODO - this is a hack
+            key: this.key,
+            animation: this.anims.currentAnim.key,
             flipX: this.flipX,
             x: this.x,
             y: this.y,

@@ -4,13 +4,11 @@ const io = geckos()
 
 io.listen() // default port is 9208
 
-const maxNumberOfPlayers = 4;
+const maxNumberOfPlayers = 2;
 const games = {}
-const playerStartingPositions = {
-    player1: {x: 200, y: 200},
-    player2: {x: 300, y: 200},
-    player3: {x: 400, y: 200},
-    player4: {x: 500, y: 200},
+const playersInitialData = {
+    player1: {key: "blue", x: 200, y: 200},
+    player2: {key: "brown", x: 300, y: 200},
 }
 
 io.onConnection(channel => {
@@ -40,8 +38,9 @@ const connect = (data, channel) => {
                 id: data.playerID,
                 animation: data.animation,
                 flipX: data.flipX,
-                x: playerStartingPositions.player1.x,
-                y: playerStartingPositions.player1.y,
+                key: playersInitialData.player1.key,
+                x: playersInitialData.player1.x,
+                y: playersInitialData.player1.y,
             }
         }
         console.log(`Created game ${data.gameID}. Adding player ${data.playerID}`);
@@ -64,8 +63,9 @@ const connect = (data, channel) => {
                 id: data.playerID,
                 animation: data.animation,
                 flipX: data.flipX,
-                x: playerStartingPositions[existingPlayers[data.playerID]].x,
-                y: playerStartingPositions[existingPlayers[data.playerID]].y,
+                key: playersInitialData[existingPlayers[data.playerID]].key,
+                x: playersInitialData[existingPlayers[data.playerID]].x,
+                y: playersInitialData[existingPlayers[data.playerID]].y,
             }
             games[data.gameID] = gameState;
             console.log(`Player ${data.playerID} reconnecting to game ${data.gameID} as ${existingPlayers[data.playerID]}`);
@@ -77,14 +77,15 @@ const connect = (data, channel) => {
         }
 
         // Player doesn't yet exist.
-        [1, 2, 3, 4].every(player => {
+        [1, 2].every(player => {
             if (!Object.keys(gameState).includes(`player${player}`)) {
                 gameState[`player${player}`] = {
                     id: data.playerID,
                     animation: data.animation,
                     flipX: data.flipX,
-                    x: playerStartingPositions[`player${player}`].x,
-                    y: playerStartingPositions[`player${player}`].y,
+                    key: playersInitialData[`player${player}`].key,
+                    x: playersInitialData[`player${player}`].x,
+                    y: playersInitialData[`player${player}`].y,
                 }
                 games[data.gameID] = gameState;
                 console.log(`Player ${data.playerID} connecting to game ${data.gameID} as ${existingPlayers[data.playerID]}`);
@@ -107,6 +108,7 @@ const updatePlayerPosition = (data, channel) => {
         ...gameState[data.label],
         animation: data.animation,
         flipX: data.flipX,
+        key: data.key,
         x: data.x,
         y: data.y,
     }
