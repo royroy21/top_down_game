@@ -24,20 +24,20 @@ class MainScene extends Phaser.Scene {
     preload() {
         this.load.spritesheet(
             "blueKnightSpriteSheet",
-            "assets/blue_knight_sprite_sheet.png", {
+            "assets/sprites/blue_knight_sprite_sheet.png", {
                 frameWidth: 72,
                 frameHeight: 92,
             }
         );
         this.load.spritesheet(
             "brownKnightSpriteSheet",
-            "assets/brown_knight_sprite_sheet.png", {
+            "assets/sprites/brown_knight_sprite_sheet.png", {
                 frameWidth: 72,
                 frameHeight: 92,
             }
         );
-        this.load.tilemapTiledJSON("map", "assets/map.json");
-        this.load.image("tiles", "assets/64x64DungeonTileset.v4.png");
+        this.load.image("tiles", "assets/maps/64x64DungeonTileset.v4.png");
+        this.load.tilemapTiledJSON("map", "assets/maps/map.json");
     }
 
     create() {
@@ -100,6 +100,8 @@ class MainScene extends Phaser.Scene {
             gameID: this.getGameID(),
             playerID: this.getPlayerID(),
         });
+        this.player.body.setSize(63, 84);
+        this.player.body.setOffset(5, 3);
         this.physics.add.collider(this.player, this.blocking);
         this.configureCamera();
     }
@@ -135,16 +137,36 @@ class MainScene extends Phaser.Scene {
         });
         this.scale.resize(this.map.widthInPixels, this.map.heightInPixels);
         const tileSet = this.map.addTilesetImage(
-            "64x64DungeonTileset.v4",
+            "dungeon",  // Whatever we called the tilemap in tiled
             "tiles",
             64,
             64,
         );
-        this.map.createLayer("floor", tileSet, 0, 0);
-        this.blocking = this.map.createLayer("blocking", tileSet, 0, 0);
+        this.map.createLayer("floor", tileSet);
+        this.blocking = this.map.createLayer("blocking", tileSet);
         this.blocking.setCollisionByProperty({
             collides: true
         });
+
+        // When debugging is true shows colliding tiles
+        if (this.game.config.physics.arcade.debug) {
+            const debugGraphics = this.add.graphics().setAlpha(0.75);
+            this.blocking.renderDebug(debugGraphics, {
+              tileColor: null, // Color of non-colliding tiles
+              collidingTileColor: new Phaser.Display.Color(
+                243,
+                134,
+                48,
+                255,
+              ), // Color of colliding tiles
+              faceColor: new Phaser.Display.Color(
+                40,
+                39,
+                37,
+                255,
+              ) // Color of colliding face edges
+            });
+        }
     }
 
     configureCamera() {
@@ -186,6 +208,8 @@ class MainScene extends Phaser.Scene {
           data.y,
           `${data.key}KnightSpriteSheet`,
         );
+        this.otherPlayers[label].body.setSize(63, 84);
+        this.otherPlayers[label].body.setOffset(5, 3);
         this.otherPlayers[label].body.immovable = true;
         this.otherPlayers[label].body.moves = false;
         this.physics.add.collider(this.otherPlayers[label], this.blocking);

@@ -17,11 +17,11 @@ export default class Game extends React.Component {
       // width: 2048,
       // height: 1088,
       scene: [MainScene],
-      backgroundColor: "#575757",
+      backgroundColor: "#000",
       physics: {
         default: "arcade",
         arcade: {
-            // debug: true,
+            debug: false,
         }
       },
       input: {
