@@ -36,6 +36,7 @@ class MainScene extends Phaser.Scene {
                 frameHeight: 92,
             }
         );
+        this.load.image("ak47", "assets/sprites/ak47.png");
         this.load.image("tiles", "assets/maps/64x64DungeonTileset.v4.png");
         this.load.tilemapTiledJSON("map", "assets/maps/map.json");
     }
@@ -100,9 +101,10 @@ class MainScene extends Phaser.Scene {
             gameID: this.getGameID(),
             playerID: this.getPlayerID(),
         });
-        this.player.body.setSize(63, 84);
-        this.player.body.setOffset(5, 3);
-        this.physics.add.collider(this.player, this.blocking);
+        this.add.existing(this.player);
+        this.player.playerBody.body.setSize(63, 84);
+        this.player.playerBody.body.setOffset(5, 3);
+        this.physics.add.collider(this.player.playerBody, this.blocking);
         this.configureCamera();
     }
 
@@ -183,7 +185,7 @@ class MainScene extends Phaser.Scene {
           this.map.heightInPixels,
         );
         this.cameras.main.startFollow(
-          this.player,
+          this.player.playerBody,
           true,
           0.1,
           0.1,

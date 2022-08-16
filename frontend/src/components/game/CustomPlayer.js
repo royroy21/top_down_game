@@ -1,19 +1,45 @@
 import Phaser from "phaser";
+import RangedWeapon from "./RangedWeapon";
 
-class CustomPlayer extends Phaser.GameObjects.Sprite {
+// TODO - this is hacked. The container doesn't really do anything.
+// Maybe we could simply remove the container and use a class to hold
+// shiz together?
+class CustomPlayer extends Phaser.GameObjects.Container {
     constructor(config) {
-        super(config.scene, config.x, config.y, config.key);
-        this.scene = config.scene;
+        const playerBody = new Body({
+            scene: config.scene,
+            x: 0,
+            y: 0,
+            key: config.key,
+            label: config.label,
+            gameID: config.gameID,
+            playerID: config.playerID,
+            depth: 1,
+        });
+
+        const rangedWeaponXOffSet = 10;
+        const rangedWeaponYOffSet = 26;
+        const rangedWeapon = new RangedWeapon({
+            scene: config.scene,
+            x: rangedWeaponXOffSet,
+            y: rangedWeaponYOffSet,
+            key: "ak47",
+            depth: 2,
+        })
+        super(config.scene, config.x, config.y, [rangedWeapon, playerBody]);
+
+        this.playerBody = playerBody;
+        this.rangedWeapon = rangedWeapon;
+        this.rangedWeaponXOffSet = rangedWeaponXOffSet;
+        this.rangedWeaponYOffSet = rangedWeaponYOffSet;
+
         this.key = config.key;
         this.label = config.label;
         this.gameID = config.gameID;
         this.playerID = config.playerID;
-        this.scene.add.existing(this);
-        this.scene.physics.add.existing(this);
         this.createAnimations();
-
         this.playerSpeed = 300;
-        this.body.setMaxSpeed(this.playerSpeed);
+        this.playerBody.body.setMaxSpeed(this.playerSpeed);
         this.updatePlayerPosition = false;
         this.playerStillIdle = false;
         this.playerCursors = this.scene.input.keyboard.createCursorKeys();
@@ -26,6 +52,9 @@ class CustomPlayer extends Phaser.GameObjects.Sprite {
             console.log("Gamepad connected ...");
             this.gamepad = pad;
         }, this);
+
+        console.log("player depth: ", this.playerBody.depth);
+        console.log("ranged weapon depth: ", this.rangedWeapon.depth);
     }
 
     createAnimations() {
@@ -51,17 +80,17 @@ class CustomPlayer extends Phaser.GameObjects.Sprite {
     }
 
     stopPlayerVelocityX() {
-        this.body.setVelocityX(0);
+        this.playerBody.body.setVelocityX(0);
     }
 
     stopPlayerVelocityY() {
-        this.body.setVelocityY(0);
+        this.playerBody.body.setVelocityY(0);
     }
 
     stopPlayer() {
         this.stopPlayerVelocityX();
         this.stopPlayerVelocityY();
-        this.play(`${this.key}_idle`);
+        this.playerBody.play(`${this.key}_idle`);
         if (this.updatePlayerPosition) {
             if (!this.playerStillIdle) {
                 this.playerStillIdle = true;
@@ -74,42 +103,46 @@ class CustomPlayer extends Phaser.GameObjects.Sprite {
     }
 
     movePlayerLeft() {
-        if (this.flipX) {
-            this.flipX = false;
+        if (this.playerBody.flipX) {
+            this.playerBody.flipX = false;
         }
-        this.body.setVelocityX(-Math.abs(this.playerSpeed));
-        if (!(this.anims.isPlaying && this.anims.currentAnim.key === `${this.key}_walk`)) {
-            this.play(`${this.key}_walk`);
+        this.bringToTop(this.playerBody);
+
+        this.playerBody.body.setVelocityX(-Math.abs(this.playerSpeed));
+        if (!(this.playerBody.anims.isPlaying && this.playerBody.anims.currentAnim.key === `${this.key}_walk`)) {
+            this.playerBody.play(`${this.key}_walk`);
         }
         this.updatePlayerPosition = true;
         this.playerStillIdle = false;
     }
 
     movePlayerRight() {
-        if (!this.flipX) {
-            this.flipX = true;
+        if (!this.playerBody.flipX) {
+            this.playerBody.flipX = true;
         }
-        this.body.setVelocityX(this.playerSpeed);
-        if (!(this.anims.isPlaying && this.anims.currentAnim.key === `${this.key}_walk`)) {
-            this.play(`${this.key}_walk`);
+        this.bringToTop(this.rangedWeapon);
+
+        this.playerBody.body.setVelocityX(this.playerSpeed);
+        if (!(this.playerBody.anims.isPlaying && this.playerBody.anims.currentAnim.key === `${this.key}_walk`)) {
+            this.playerBody.play(`${this.key}_walk`);
         }
         this.updatePlayerPosition = true;
         this.playerStillIdle = false;
     }
 
     movePlayerUp() {
-        this.body.setVelocityY(-Math.abs(this.playerSpeed));
-        if (!(this.anims.isPlaying && this.anims.currentAnim.key === `${this.key}_walk`)) {
-            this.play(`${this.key}_walk`);
+        this.playerBody.body.setVelocityY(-Math.abs(this.playerSpeed));
+        if (!(this.playerBody.anims.isPlaying && this.playerBody.anims.currentAnim.key === `${this.key}_walk`)) {
+            this.playerBody.play(`${this.key}_walk`);
         }
         this.updatePlayerPosition = true;
         this.playerStillIdle = false;
     }
 
     movePlayerDown() {
-        this.body.setVelocityY(this.playerSpeed);
-        if (!(this.anims.isPlaying && this.anims.currentAnim.key === `${this.key}_walk`)) {
-            this.play(`${this.key}_walk`);
+        this.playerBody.body.setVelocityY(this.playerSpeed);
+        if (!(this.playerBody.anims.isPlaying && this.playerBody.anims.currentAnim.key === `${this.key}_walk`)) {
+            this.playerBody.play(`${this.key}_walk`);
         }
         this.updatePlayerPosition = true;
         this.playerStillIdle = false;
@@ -171,6 +204,14 @@ class CustomPlayer extends Phaser.GameObjects.Sprite {
             }
         }
 
+        this.rangedWeapon.flipX = !(this.playerBody.flipX);
+        this.rangedWeapon.y = this.playerBody.y + this.rangedWeaponYOffSet;
+        if (this.playerBody.flipX) {
+            this.rangedWeapon.x = this.playerBody.x + this.rangedWeaponXOffSet;
+        } else {
+            this.rangedWeapon.x = this.playerBody.x - this.rangedWeaponXOffSet;
+        }
+
         if (!this.updatePlayerPosition) {
             return null;
         }
@@ -180,11 +221,19 @@ class CustomPlayer extends Phaser.GameObjects.Sprite {
             gameID: this.gameID,
             playerID: this.playerID,
             key: this.key,
-            animation: this.anims.currentAnim.key,
+            animation: this.playerBody.anims.currentAnim.key,
             flipX: this.flipX,
             x: this.x,
             y: this.y,
         }));
+    }
+}
+
+class Body extends Phaser.GameObjects.Sprite {
+    constructor(config) {
+        super(config.scene, config.x, config.y, config.key);
+        this.scene.add.existing(this);
+        this.scene.physics.add.existing(this);
     }
 }
 
